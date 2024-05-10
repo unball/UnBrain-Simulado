@@ -13,8 +13,9 @@ import logging
 import time
 import sys
 import signal
+from vision.receiver import FiraClient
 
-from strategy.automaticReplacer import AutomaticReplacer
+#from strategy.automaticReplacer import AutomaticReplacer
 
 import constants
 
@@ -43,13 +44,16 @@ class Loop:
         # Instancia interfaces com o referee
         self.rc = RefereeCommands()
         self.rp = RefereePlacement(team_yellow=team_yellow)
+        self.visionclient = FiraClient()
+
         # Instancia o mundo e a estratégia
 
         team_side = -1 if mirror else 1
         
         self.world = World(n_robots=n_robots, side=team_side, team_yellow=team_yellow, immediate_start=immediate_start,referee=referee, firasim=firasim, control=control, debug=debug, mirror=mirror)
         
-        self.arp = AutomaticReplacer(self.world)
+        # self.arp = AutomaticReplacer(self.world) descontinuado.
+
         self.strategy = MainStrategy(self.world, static_entities=static_entities)
 
         # Variáveis
@@ -100,7 +104,7 @@ class Loop:
             for robot in self.world.raw_team: 
                 if robot is not None: robot.turnOn()
             for i, id in enumerate(self.world.n_robots):
-                print (i, id)
+                #print (i, id)
                 self.firasim.command.write(id, control_output[i][0], control_output[i][1])
             
     def busyLoop(self):
@@ -131,7 +135,7 @@ class Loop:
                 self.world.setLastCommand(command) 
                 # obedece o comando e sai do busy loop
             else:
-                self.strategy.manageReferee(self.arp, self.world.last_command)
+                self.strategy.manageReferee(self.world.last_command)
            
     def draw(self):
         for robot in [r for r in self.world.team if r is not None]:

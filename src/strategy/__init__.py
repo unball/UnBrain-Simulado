@@ -212,6 +212,7 @@ class MainStrategy(Strategy):
         #     #self.world.team[2].updateEntity(ControlTester, forced_update=True)
 
         else:
+            
             formation = self.formationDecider()
             toDecide = self.availableRobotIndexes()
 

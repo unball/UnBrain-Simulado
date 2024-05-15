@@ -46,6 +46,7 @@ class Loop:
         self.rp = RefereePlacement(team_yellow=team_yellow)
         self.visionclient = FiraClient()
 
+
         # Instancia o mundo e a estratégia
 
         team_side = -1 if mirror else 1

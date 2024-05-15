@@ -7,6 +7,7 @@ import numpy as np
 import time
 
 #DESCONTINUADO!
+
 class AutomaticPlacement(Entity):
     def __init__(self, world, robot, automaticPose, side=1):
         super().__init__(world, robot)

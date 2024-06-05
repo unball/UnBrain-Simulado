@@ -1,0 +1,17 @@
+
+ fazer com que quando a bola esteja nos campos de freeball e kickoff, o robo mais próximo da bola seja alocado como atacante
+ posição da bola == posição da falta
+ norm(posição da bola e posição dos robos)
+ o mais próximo vai ser necessariamente atacante
+
+ rearranjar as roles do robo dada a posição mínima do robô. Utilizar norm 
+
+lista que pega a distância de cada robô com a bola:
+         balldist = [norm(self.world.ball.pos,robot.pos) for robot in self.world.team]
+
+talvez sobre o teleporte ver o firasim.py ou https://github.com/VSSSLeague/VSSReferee/tree/CBR2021/src/world/entities/replacer
+
+
+questão da escolha dos atacantes, fazer um if no update para a mensagem do referee mais recente, se for start acontece toda a lógica normal
+
+bola à esquerda: positivo

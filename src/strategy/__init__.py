@@ -149,12 +149,24 @@ class MainStrategy(Strategy):
         if self.world.ball.pos[0] < -0.35:
             return [GoalKeeper, Defender, Defender, Defender, Attacker]
         else:
-            return [GoalKeeper,Defender, Midfielder, Attacker, Attacker]
-
+            return [GoalKeeper,Attacker, Defender, Defender, Attacker]
     #alteramos para que ToDecide (a variável que instancia esta função) esteja em formato de lista e não em um np.ndarray
     def availableRobotIndexes(self):
         return self.world.n_robots.copy()
 
+    def DecideBestAttacker(self, formation, toDecide):
+        distances = [norm(self.world.ball.pos, self.world.team[robotIndex].pos) for robotIndex in toDecide]
+        self.currentAttacker = bestWithHyst(self.currentAttacker, toDecide, distances, 0.20)
+        self.world.team[self.currentAttacker].updateEntity(Attacker, ballShift=0, slave=True)
+        toDecide.remove(self.currentAttacker)
+        formation.remove(Attacker)
+        return formation, toDecide
+    #   for i in range(len(self.world.n_robots)):
+    #        lessdist = min(balldist)
+   #         distindex = balldist.index(lessdist)
+  #          balldist[distindex] = max(balldist)+1
+ #           if self.world.team[distindex].entity == GoalKeeper:
+#                continue
     def decideBestGoalKeeper(self, formation, toDecide):
         nearest = self.nearestGoal(toDecide)
         self.world.team[nearest].updateEntity(GoalKeeper)
@@ -189,7 +201,6 @@ class MainStrategy(Strategy):
         return formation, toDecide
 
     def update(self, world):
-
         #Como estamos trabalhando a partir de um número dado de quantos robôs temos, é melhor tratar esses updates em um ciclo
         #De repetição que tem range máximo o número de robôs e atualizaremos com base na prioridade (goleiro primeiro, atacante segundo) 
         #obs: (ficará comentado o que era antes)
@@ -216,7 +227,8 @@ class MainStrategy(Strategy):
             formation = self.formationDecider()
             toDecide = self.availableRobotIndexes()
 
-            if GoalKeeper in formation and len(toDecide) >= 5:
+
+            if GoalKeeper in formation and len(toDecide) >= 4:
                 formation, toDecide = self.decideBestGoalKeeper(formation, toDecide)
 
             if Defender in formation and len(toDecide) >= 3:
@@ -225,9 +237,14 @@ class MainStrategy(Strategy):
             if Defender in formation and len(toDecide) >= 3:
                 formation, toDecide = self.decideBestDefender(formation, toDecide)
 
+            for robot in self.world.team:
+                print(f'entity do robo {robot.id}: {robot.entity} // pos da bola: {self.world.ball.pos[0]}\n')
+
+            print(f'valor do todecide e formation: {toDecide} {formation}')
+
             if Defender in formation and len(toDecide) >= 2:
                 formation, toDecide = self.decideBestDefender(formation, toDecide)
-
+            
             hasMaster = False
             if Attacker in formation and len(toDecide) >= 2:
                 formation, toDecide = self.decideBestMasterAttackerBetweenTwo(formation, toDecide)
@@ -235,9 +252,8 @@ class MainStrategy(Strategy):
             
             if Attacker in formation and len(toDecide) >= 1:
                 #possível erro na mudança de role abaixo, checar mais tarde
-                self.world.team[toDecide[0]].updateEntity(Attacker, ballShift=0.15 if hasMaster else 0, slave=True)
-                toDecide.remove(toDecide[0])
-                formation.remove(Attacker)
+                formation, toDecide = self.DecideBestAttacker(formation,toDecide)
+
             if Midfielder in formation and len(toDecide) >= 1:
                 self.world.team[toDecide[0]].updateEntity(Midfielder)
                 toDecide.remove(toDecide[0])

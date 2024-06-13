@@ -14,4 +14,8 @@ talvez sobre o teleporte ver o firasim.py ou https://github.com/VSSSLeague/VSSRe
 
 questão da escolha dos atacantes, fazer um if no update para a mensagem do referee mais recente, se for start acontece toda a lógica normal
 
+
+o quarto robô sempre é dado como defender no q1 e q4. Na terceira parte do todecide e 
 bola à esquerda: positivo
+
+NAO IMPORTA O QUE EU FAÇA, AS ROLES DOS ROBÔS NÃO SÃO DADAS NO UPDATE, ENTÃO ONDE FICA??????

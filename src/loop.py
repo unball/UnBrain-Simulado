@@ -170,5 +170,3 @@ class Loop:
 
         logging.info("System stopped")
 
-
-##bola

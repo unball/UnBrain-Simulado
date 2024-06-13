@@ -129,14 +129,13 @@ def perpl(r):
   
 def bestWithHyst(state: int, possibleStates: list, possibleStatesDistances: list, hyst: float):
   if state in possibleStates:
-    distances = [0,1]
-    
+    distances=np.array(possibleStatesDistances)
+    for index, s in enumerate(possibleStates):
+      if s != state:
+        distances[index]+=hyst
   else:
     distances = np.array(possibleStatesDistances)
-  #Se o len > 2 (mais de 2 robôs) descobrimos qual melhor robô, se não, 0
-  if len(distances) >= 2: best = np.argmin(distances)
-  else: best = 0
-  return possibleStates[best]
+  return possibleStates[np.argmin(distances)]
 def encodeSpeeds(v: float, w: float) -> (int, int):
   
   venc = int(v/2 * 32767)

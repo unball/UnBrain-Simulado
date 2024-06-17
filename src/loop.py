@@ -129,8 +129,8 @@ class Loop:
             if self.world.debug and command is not None:
                 print(self.world.last_command)
                 print(command)
-            elif self.world.debug and command is None:
-                print("NENHUM PACOTE RECEBIDO AINDA")
+            #elif self.world.debug and command is None:
+            #   print("NENHUM PACOTE RECEBIDO AINDA")
             
             if command is not None:
                 self.world.setLastCommand(command) 

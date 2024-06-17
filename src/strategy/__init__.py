@@ -38,97 +38,27 @@ class MainStrategy(Strategy):
         self.static_entities = static_entities
 
     def manageReferee(self, command):
-        #código do arp descontinuado, se for preciso para futuras alterações, revisar versões antigas        
-        # Pegar apenas id que existe dos robos
-        robot_id = []
-        for robot in self.world.team:
-            if robot is None:
-                return
-        for robot in self.world.team:
-            if robot is not None:
-                robot_id.append(robot.id)
-
         if command is None: 
             for robot in self.world.raw_team: 
                 if robot is not None:
                     robot.turnOff()
         
         else:
-            self.goalkeeperIndx = None
-            self.AttackerIdx = None
-                        # Inicia jogo   
-            if command.foul == Foul.GAME_ON:
-                
-                if(self.world.debug):
-                    print("COMANDO START ENVIADO")
-                
-                for robot in self.world.raw_team:
-                    if robot is not None:
-                        robot.turnOn()
-                        
-            elif command.foul == Foul.STOP or command.foul == Foul.HALT:
-                
-                if(self.world.debug):
-                    print("COMANDO STOP OU HALT ENVIADO")
-                
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()
-            
-            if command.foul == Foul.KICKOFF:
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()
 
-            elif command.foul == Foul.PENALTY_KICK:
-                
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()                 
-            
-            elif command.foul == Foul.FREE_BALL and command.foulQuadrant == Quadrant.QUADRANT_1:
-                if(self.world.debug):
-                    print("FREE BALL Q1")
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()
+            ComandoReferee = {
+                Foul.KICKOFF:"Começo de jogo",
+                Foul.FREE_BALL:"Free ball",
+                Foul.PENALTY_KICK:"Pênaulti",
+                Foul.GOAL_KICK:"Tiro de meta",
+                Foul.GAME_ON:"Start",
+                Foul.STOP:"Stop",
+                Foul.HALT:"Stop"
+            }
 
-            
-            elif command.foul == Foul.FREE_BALL and command.foulQuadrant == Quadrant.QUADRANT_2:
-                
-                if(self.world.debug):
-                    print("FREE BALL Q2")
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()
-
-            elif command.foul == Foul.FREE_BALL and command.foulQuadrant == Quadrant.QUADRANT_3:
-                
-                if(self.world.debug):
-                    print("FREE BALL Q3")
-
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()
-
-            elif command.foul == Foul.FREE_BALL and command.foulQuadrant == Quadrant.QUADRANT_4:
-                
-                if(self.world.debug):
-                    print("FREE BALL Q4")
+            if self.world.debug:
+                print(f'{ComandoReferee[command.foul]} no quadrante {command.foulQuadrant}')
+            [robot.turnOn() for robot in self.world.team if robot is not None and ComandoReferee[command.foul] == "Start"] + [robot.turnOff() for robot in self.world.team if robot is not None and ComandoReferee[command.foul] != "Start"]
                     
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()
-
-            elif command.foul == Foul.GOAL_KICK:
-                
-                if(self.world.debug):
-                    print("GOAL KICK")
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()        
-                    
-    
     def nearestGoal(self, indexes):
         rg = np.array([-1.1, 0])
         rrs = np.array([self.world.team[i].pos for i in indexes])
@@ -146,14 +76,21 @@ class MainStrategy(Strategy):
         return pose[:2]
 
     def formationDecider(self):
-        if self.world.ball.pos[0] < -0.35:
+        if self.world.ball.pos[0] < 0.35 and self.world.team_yellow is True:
             return [GoalKeeper, Defender, Defender, Defender, Attacker]
         else:
-            return [GoalKeeper,Defender, Midfielder, Attacker, Attacker]
-
+            return [GoalKeeper,Attacker, Defender, Defender, Attacker]
     #alteramos para que ToDecide (a variável que instancia esta função) esteja em formato de lista e não em um np.ndarray
     def availableRobotIndexes(self):
         return self.world.n_robots.copy()
+
+    def DecideBestAttacker(self, formation, toDecide, hasMaster):
+        distances = [norm(self.world.ball.pos, self.world.team[robotIndex].pos) for robotIndex in toDecide]
+        self.currentAttacker = bestWithHyst(self.currentAttacker, toDecide, distances, 0.2)
+        self.world.team[self.currentAttacker].updateEntity(Attacker, ballShift=0, slave=hasMaster)
+        toDecide.remove(self.currentAttacker)
+        formation.remove(Attacker)
+        return formation, toDecide
 
     def decideBestGoalKeeper(self, formation, toDecide):
         nearest = self.nearestGoal(toDecide)
@@ -176,20 +113,7 @@ class MainStrategy(Strategy):
 
         return formation, toDecide
 
-    def decideBestMasterAttackerBetweenTwo(self, formation, toDecide):
-        d1 = norm(self.world.team[toDecide[0]].pos, self.world.ball.pos)
-        d2 = norm(self.world.team[toDecide[1]].pos, self.world.ball.pos)
-
-        self.currentAttacker = bestWithHyst(self.currentAttacker, toDecide, [d1, d2], 0.20)
-    
-        self.world.team[self.currentAttacker].updateEntity(Attacker, ballShift=0, slave=False)
-        toDecide.remove(self.currentAttacker)
-        formation.remove(Attacker)
-
-        return formation, toDecide
-
     def update(self, world):
-
         #Como estamos trabalhando a partir de um número dado de quantos robôs temos, é melhor tratar esses updates em um ciclo
         #De repetição que tem range máximo o número de robôs e atualizaremos com base na prioridade (goleiro primeiro, atacante segundo) 
         #obs: (ficará comentado o que era antes)
@@ -216,33 +140,31 @@ class MainStrategy(Strategy):
             formation = self.formationDecider()
             toDecide = self.availableRobotIndexes()
 
-            if GoalKeeper in formation and len(toDecide) >= 5:
+
+            if GoalKeeper in formation and len(toDecide) >= 1:
                 formation, toDecide = self.decideBestGoalKeeper(formation, toDecide)
 
-            if Defender in formation and len(toDecide) >= 3:
-                formation, toDecide = self.decideBestDefender(formation, toDecide)
-
-            if Defender in formation and len(toDecide) >= 3:
-                formation, toDecide = self.decideBestDefender(formation, toDecide)
-
-            if Defender in formation and len(toDecide) >= 2:
-                formation, toDecide = self.decideBestDefender(formation, toDecide)
-
             hasMaster = False
-            if Attacker in formation and len(toDecide) >= 2:
-                formation, toDecide = self.decideBestMasterAttackerBetweenTwo(formation, toDecide)
-                hasMaster = True
-            
             if Attacker in formation and len(toDecide) >= 1:
-                #possível erro na mudança de role abaixo, checar mais tarde
-                self.world.team[toDecide[0]].updateEntity(Attacker, ballShift=0.15 if hasMaster else 0, slave=True)
-                toDecide.remove(toDecide[0])
-                formation.remove(Attacker)
+                formation, toDecide = self.DecideBestAttacker(formation, toDecide, hasMaster)
+                hasMaster = True
+
+            if Attacker in formation and len(toDecide) >= 1:
+                formation, toDecide = self.DecideBestAttacker(formation,toDecide, hasMaster)
+
+            if Defender in formation and len(toDecide) >= 1:
+                formation, toDecide = self.decideBestDefender(formation, toDecide)
+
+            if Defender in formation and len(toDecide) >= 1:
+                formation, toDecide = self.decideBestDefender(formation, toDecide)
+            
+            if Defender in formation and len(toDecide) >= 1:
+                formation, toDecide = self.decideBestDefender(formation, toDecide)
+
             if Midfielder in formation and len(toDecide) >= 1:
                 self.world.team[toDecide[0]].updateEntity(Midfielder)
                 toDecide.remove(toDecide[0])
                 formation.remove(Midfielder)
-
         for robot in self.world.team:
             if robot is not None:
                 robot.updateSpin()

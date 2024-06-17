@@ -38,97 +38,27 @@ class MainStrategy(Strategy):
         self.static_entities = static_entities
 
     def manageReferee(self, command):
-        #código do arp descontinuado, se for preciso para futuras alterações, revisar versões antigas        
-        # Pegar apenas id que existe dos robos
-        robot_id = []
-        for robot in self.world.team:
-            if robot is None:
-                return
-        for robot in self.world.team:
-            if robot is not None:
-                robot_id.append(robot.id)
-
         if command is None: 
             for robot in self.world.raw_team: 
                 if robot is not None:
                     robot.turnOff()
         
         else:
-            self.goalkeeperIndx = None
-            self.AttackerIdx = None
-                        # Inicia jogo   
-            if command.foul == Foul.GAME_ON:
-                
-                if(self.world.debug):
-                    print("COMANDO START ENVIADO")
-                
-                for robot in self.world.raw_team:
-                    if robot is not None:
-                        robot.turnOn()
-                        
-            elif command.foul == Foul.STOP or command.foul == Foul.HALT:
-                
-                if(self.world.debug):
-                    print("COMANDO STOP OU HALT ENVIADO")
-                
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()
-            
-            if command.foul == Foul.KICKOFF:
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()
 
-            elif command.foul == Foul.PENALTY_KICK:
-                
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()                 
-            
-            elif command.foul == Foul.FREE_BALL and command.foulQuadrant == Quadrant.QUADRANT_1:
-                if(self.world.debug):
-                    print("FREE BALL Q1")
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()
+            ComandoReferee = {
+                Foul.KICKOFF:"Começo de jogo",
+                Foul.FREE_BALL:"Free ball",
+                Foul.PENALTY_KICK:"Pênaulti",
+                Foul.GOAL_KICK:"Tiro de meta",
+                Foul.GAME_ON:"Start",
+                Foul.STOP:"Stop",
+                Foul.HALT:"Stop"
+            }
 
-            
-            elif command.foul == Foul.FREE_BALL and command.foulQuadrant == Quadrant.QUADRANT_2:
-                
-                if(self.world.debug):
-                    print("FREE BALL Q2")
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()
-
-            elif command.foul == Foul.FREE_BALL and command.foulQuadrant == Quadrant.QUADRANT_3:
-                
-                if(self.world.debug):
-                    print("FREE BALL Q3")
-
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()
-
-            elif command.foul == Foul.FREE_BALL and command.foulQuadrant == Quadrant.QUADRANT_4:
-                
-                if(self.world.debug):
-                    print("FREE BALL Q4")
+            if self.world.debug:
+                print(f'{ComandoReferee[command.foul]} no quadrante {command.foulQuadrant}')
+            [robot.turnOn() for robot in self.world.team if robot is not None and ComandoReferee[command.foul] == "Start"] + [robot.turnOff() for robot in self.world.team if robot is not None and ComandoReferee[command.foul] != "Start"]
                     
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()
-
-            elif command.foul == Foul.GOAL_KICK:
-                
-                if(self.world.debug):
-                    print("GOAL KICK")
-                for robot in self.world.raw_team: 
-                    if robot is not None:
-                        robot.turnOff()        
-                    
-    
     def nearestGoal(self, indexes):
         rg = np.array([-1.1, 0])
         rrs = np.array([self.world.team[i].pos for i in indexes])

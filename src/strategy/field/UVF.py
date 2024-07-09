@@ -4,7 +4,7 @@ from tools import angl, unit, norml, angError, filt, sat
 from . import Field
 
 class UVF(Field):
-    def __init__(self, Pb, radius=0.13, direction=0, spiral=True, Kr=0.03, Kr_single=0.03, nullgamma=False):
+    def __init__(self, Pb, radius=0.045, direction=0, spiral=True, Kr=0.04, Kr_single=0.03, nullgamma=False):
         super().__init__(Pb)
 
         # Raio da espiral
@@ -45,9 +45,9 @@ class UVF(Field):
 
         # Campo UVF
         if self.direction == 0:
-            if np.abs(P[1]) <= self.r:
+            if (P[1] <= self.r).all():
                 return angl((yl*self.N_one(Pr, -1) + yr*self.N_one(Pl, +1)) / (2*self.r)) + Pb[2]
-            elif P[1] < -self.r:
+            elif (P[1] < -self.r).all():
                 return angl(self.N_one(Pr, -1)) + Pb[2]
             else:
                 return angl(self.N_one(Pl, +1)) + Pb[2]
@@ -63,7 +63,7 @@ class UVF(Field):
         return unit(self.alpha_one(P, sign, r, Kr))
 
     def alpha_one(self, P, sign, r, Kr):
-        if norml(P) >= r:
+        if (norml(P) >= r).all():
             return angl(P) + sign * np.pi/2 * (2 - (r+Kr) / (norml(P) + Kr))
         else:
             if self.spiral:

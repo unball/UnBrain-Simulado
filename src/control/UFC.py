@@ -15,7 +15,7 @@ def close_event():
 
 class UFC_Simple(Control):
   """Controle unificado para o Univector Field, utiliza o ângulo definido pelo campo como referência \\(\\theta_d\\)."""
-  def __init__(self, world, kw=4, kp=20, mu=0.3, vmax=1.5, L=L, enableInjection=False):
+  def __init__(self, world, kw=4, kp=22, mu=0.9, vmax=1.375, L=L, enableInjection=False):
     Control.__init__(self, world)
 
     self.g = 9.8
@@ -26,10 +26,9 @@ class UFC_Simple(Control):
     self.vmax = vmax
     self.L = L
     self.kv = 10
-    self.vbias = 0.4
-
+    self.vbias = 0.225
     self.sd_min = 1e-4
-    self.sd_max = 0.5
+    self.sd_max = 0.407
 
     self.lastth = [0,0,0,0]
     self.lastdth = 0
@@ -39,7 +38,7 @@ class UFC_Simple(Control):
     self.lastwref = 0
     self.lastvref = 0
     self.integrateinjection = 0
-    self.loadedInjection = 0
+    self.loadedInjection = 0  
     self.lastPb = np.array([0,0])
     self.vPb = np.array([0,0])
 
@@ -141,7 +140,7 @@ class UFC_Simple(Control):
       injection = 0
 
     v5 = self.vbias + (self.vmax-self.vbias) * self.controlLine(np.log(sd), np.log(self.sd_max), np.log(self.sd_min))
-    v  = min(v5, v3) + sat(injection, 1)
+    v  =min(v3,v5)+ sat(injection, 1)
     #print(vtarget)
     #v  = max(min(self.vbias + (self.vmax-self.vbias) * np.exp(-self.kapd * sd), v3), self.loadedInjection * vtarget)#max(min(v1, v2, v3, v4), 0)
     #ev = self.lastvref - robot.velmod

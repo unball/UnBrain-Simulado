@@ -33,8 +33,11 @@ parser.add_argument('--debug', dest='debug', action='store_const',
 
 parser.add_argument('--mirror', dest='mirror', action='store_const',
                     const=True, default=False, help='If vision is mirrored or not. Affects angles.')
+
 parser.add_argument('--n_robots', dest='n_robots', type=str, default="0,1,2,3,4" , help='Number of robots for each time in the match.')
 
+parser.add_argument('--control_tester', dest='control_tester', default=False, help="Control testing entity.",
+                    action='store_const', const=True)
 
 args = parser.parse_args()
 
@@ -63,7 +66,8 @@ loop = Loop(
     control=args.control,
     debug=args.debug,
     n_robots=args.n_robots,
-    mirror=mirror
+    mirror=mirror,
+    control_tester=args.control_tester
 )
 
 loop.run()

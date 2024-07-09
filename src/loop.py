@@ -33,7 +33,8 @@ class Loop:
                 control=False,
                 debug =False,
                 mirror=False, 
-                n_robots=[0,1,2,3,4]
+                n_robots=[0,1,2,3,4],
+                control_tester=False
             ):
         # Instancia interface com o simulador
         self.firasim = VSS(len(n_robots),team_yellow=team_yellow)
@@ -51,7 +52,7 @@ class Loop:
 
         team_side = -1 if mirror else 1
         
-        self.world = World(n_robots=n_robots, side=team_side, team_yellow=team_yellow, immediate_start=immediate_start,referee=referee, firasim=firasim, control=control, debug=debug, mirror=mirror)
+        self.world = World(control_tester= control_tester, n_robots=n_robots, side=team_side, team_yellow=team_yellow, immediate_start=immediate_start,referee=referee, firasim=firasim, control=control, debug=debug, mirror=mirror)
         
         # self.arp = AutomaticReplacer(self.world) descontinuado.
 

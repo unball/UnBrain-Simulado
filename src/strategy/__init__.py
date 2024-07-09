@@ -3,7 +3,7 @@ from .entity.attacker import Attacker
 from .entity.goalKeeper import GoalKeeper
 from .entity.defender import Defender
 from .entity.midfielder import Midfielder
-from .entity.controlTest import ControlTester
+from .entity.controlTester import ControlTester
 from client.protobuf.vssref_common_pb2 import Foul, Quadrant
 from client.referee import RefereeCommands
 from tools import sats, norml, unit, angl, angError, projectLine, howFrontBall, norm, bestWithHyst
@@ -123,23 +123,12 @@ class MainStrategy(Strategy):
                 for robo in self.world.n_robots:
                     self.world.team[int(robo)].updateEntity(roles[int(robo)])
                     self.world.staticen = True
-            #self.world.team[0].updateEntity(Attacker)
-            #self.world.team[1].updateEntity(Defender)
-            #self.world.team[2].updateEntity(GoalKeeper)
-
-        #mesma coisa aqui só que sem o static-entities
-        # elif world.control:
-        #     for i in self.world.n_robots:
-        #         self.world.team[i].updateEntity(ControlTester, forced_update=True)
-        #     #self.world.team[0].updateEntity(ControlTester, forced_update=True)
-        #     #self.world.team[1].updateEntity(ControlTester, forced_update=True)
-        #     #self.world.team[2].updateEntity(ControlTester, forced_update=True)
-
+        elif self.world.control_tester:
+            for i in self.world.n_robots:
+                self.world.team[i].updateEntity(ControlTester)
         else:
-            
             formation = self.formationDecider()
             toDecide = self.availableRobotIndexes()
-
 
             if GoalKeeper in formation and len(toDecide) >= 1:
                 formation, toDecide = self.decideBestGoalKeeper(formation, toDecide)

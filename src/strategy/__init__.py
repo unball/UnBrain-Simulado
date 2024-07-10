@@ -76,7 +76,7 @@ class MainStrategy(Strategy):
         return pose[:2]
 
     def formationDecider(self):
-        if self.world.ball.pos[0] < 0.35 and self.world.team_yellow is True:
+        if self.world.ball.pos[0] < 0.15 and self.world.team_yellow is True:
             return [GoalKeeper, Defender, Defender, Defender, Attacker]
         else:
             return [GoalKeeper,Attacker, Defender, Defender, Attacker]

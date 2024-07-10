@@ -43,7 +43,6 @@ class ControlTester(Entity):
 
             # Inverter a direção se o robô ficar preso em algo
                 elif self.robot.isAlive() is False and self.robot.spin == 0:
-                    print('capaz')
                     self.lastChat = time.time()
                     self.robot.direction *= -1    
 
@@ -65,7 +64,6 @@ class ControlTester(Entity):
         #Quad 4: X = +0.550 Y = -0.600
 
         #Andar para frente e para trás
-        print(f'{self.robot.isAlive()} e {self.robot.spin}')
         if self.x == 1:
             if not 0.500 < rr[0] < 0.600 or not 0.550 < rr[1] < 0.650: #Não chegou no lugar certo
                 self.robot.field = DirectionalField(ang(rr,[0.550,0.600]), Pb=(0.550,0.600,1.5*np.pi))

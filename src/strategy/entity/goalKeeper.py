@@ -79,8 +79,10 @@ class GoalKeeper(Entity):
                     print('unstable ANG')
                     self.robot.setSpin(1, timeOut = 0.13)"""
             if np.abs(rr[0]-rg[0]) > 0.03: #or abs(angError(self.robot.th, ang(rr, rg))) > 40 * np.pi / 180:
-                print(np.abs(rr[0]-rg[0]) > 0.03)
-                print('unstable')
+                if self.world.debug:
+                    print(np.abs(rr[0]-rg[0]) > 0.03)
+                if self.world.debug:
+                    print('Unstable')
                 self.state = "Unstable"
                 """if self.robot.field is not None:
                     ref_th = self.robot.field.F(self.robot.pose)
@@ -90,15 +92,18 @@ class GoalKeeper(Entity):
                         self.robot.setSpin(1, timeOut = 0.05)"""
         elif self.state == "Unstable":
             if rr[0] > 0:
-                print("Attacker Control acessado")
+                if self.world.debug:
+                    print("Attacker Control acessado")
                 self.setAttackerControl()
                 self.state = "Far"
             elif np.abs(rr[0]-rg[0]) < 0.015:
                 self.state = "Stable"
         else:
-            print('else')
+            if self.world.debug:
+                print('else')
             if np.abs(rr[0]-rg[0]) < 0.015:
-                print("IF")
+                if self.world.debug:
+                    print("IF")
                 self.state = "Stable"
                 self.setGoalKeeperControl()
 

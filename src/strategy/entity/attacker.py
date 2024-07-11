@@ -184,13 +184,13 @@ class Attacker(Entity):
         #if self.attackState==0: self.elapsed = math.inf
 
         # # Campo para evitar área aliada
-        # a, b = self.world.field.areaEllipseSize
-        # center = self.world.field.areaEllipseCenter
-        # self.robot.field = AvoidanceField(self.robot.field, AvoidEllipse(center, 0.6*a, 0.80*b), borderSize=0.15)
+        a, b = self.world.field.areaEllipseSize
+        center = self.world.field.areaEllipseCenter
+        self.robot.field = AvoidanceField(self.robot.field, AvoidEllipse(center, 0.6*a, 0.80*b), borderSize=0.15)
 
         # # Campo para evitar área inimiga
-        # if np.any([insideEllipse(robot.pos, a, b, rg) for robot in otherAllies]):
-        #     self.robot.field = AvoidanceField(self.robot.field, AvoidEllipse(rg, 0.6*a, 0.80*b), borderSize=0.15)
+       # if np.any([insideEllipse(robot.pos, a, b, rg) for robot in otherAllies]):
+         #   self.robot.field = AvoidanceField(self.robot.field, AvoidEllipse(rg, 0.6*a, 0.80*b), borderSize=0.15)
         
         # if self.attackState == 0 and rr[0] > 0 and norm(rr, rb) > 0.10:
         #    for robot in enemies:#otherAllies + enemies:

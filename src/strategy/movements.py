@@ -1,9 +1,9 @@
 import numpy as np
 import scipy
-from tools import unit, angl, ang, norm, sat, howFrontBall, norml, projectLine, insideEllipse, howPerpBall, perpl
+from tools import unit, angl, ang, norm, sat, howFrontBall, norml, projectLine, insideEllipse, howPerpBall, perpl, angError, derivative
 import math
 
-def goToBall(rb, vb, rg, rr, rl, vravg, offset=0.015):
+def goToBallSec(rb, vb, rg, rr, rl, vravg, offset=0.015):
     rb = rb.copy()
     #rbp = rb + vb * norm(rb, rr) / (vravg + 0.00001)
 
@@ -38,6 +38,28 @@ def goToBall(rb, vb, rg, rr, rl, vravg, offset=0.015):
     else: angle = ang(target, rg)
 
     return np.array([*target[:2], angle])
+
+def goToBall(rb, rg, vb, rl):
+    # Acrescenta um offset
+    if any(np.abs(rb) > rl):
+        offset = 0
+    else:
+        offset = -0 * unit(angl(rg-rb)) #+ 0.015 * unit(angl(rg-rb) + np.pi/2)
+
+    rb = rb + offset
+    
+    # Ângulo da bola até o gol
+    angle = ang(rb, rg)
+
+    eps = 1e-5  # pequeno delta para derivada numérica
+
+    fx = lambda x: ang((x, rb[1]), rg)
+    fy = lambda y: ang((rb[0], y), rg)
+
+    dth = derivative([fx(rb[0] + eps), fx(rb[0])], eps) * vb[0] + \
+      derivative([fy(rb[1] + eps), fy(rb[1])], eps) * vb[1]
+    v = (*vb, dth)
+    return np.array([*rb[:2], angle]), v
 
 def avoidObstacle(rt, rr, rl, rps):
     obstacles = []
@@ -74,6 +96,13 @@ def avoidObstacle(rt, rr, rl, rps):
         return np.array([*rtv2, ang(rr, rt)])
     else:
         return rt
+
+def goToGoal(rg, rr, vr):
+    # Ponto de destino é a posição do gol com o ângulo do robô até o gol
+    angle = ang(rr, rg)
+    dth = derivative(lambda x : ang((x, rr[1]), rg), rr[0]) * vr[0] + derivative(lambda y : ang((rr[0], y), rg), rr[1]) * vr[1]
+
+    return np.array([*rg[:2], angle]), (0,0,-dth)
 
 def goalkeep(rb, vb, rr, rg):
     xGoal = rg[0]
@@ -158,6 +187,23 @@ def intercept(rr, rb, direction, rg, vb, vrref=0.5, arref=1.4):
             return False
     except:
         return False
+
+def spinDefender(rb, rr, rm):
+    if norm(rb, rm) > norm(rr, rm) and norm(rr, rb) < 0.12:
+        spin = 1 if rr[1] > rb[1] else -1
+    else:
+        spin = 0
+
+    return spin
+
+def mirrorPosition(rr, vr, rb, rg):
+    angle = -1 * ang(rb, rg)
+
+    dx = vr[0]
+    dy = -vr[1]
+    dth = 0
+
+    return (rr[0]-.1, -1 * rr[1], angle), (dx, dy, dth)
 
     # r1 = rr - rb
     # r2 = vb - unit(ang(rr, rg)) * vrref

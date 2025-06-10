@@ -3,9 +3,10 @@ from tools import angl, unit, norml, angError, filt, sat
 
 class Field:
     def __init__(self, Pb):
+        super().__init__()
         self.Pb = Pb
 
-    def F(self, P):
+    def F(self, P, Pb=None):
         pass
 
     def dth(self, th2, th1, dt):

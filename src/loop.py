@@ -158,7 +158,7 @@ class Loop:
             # Executa o loop de visão e referee até dar o tempo de executar o resto
             self.busyLoop()
             while time.time() - t0 < self.loopTime:
-                self.busyLoop()
+                self.loop()
                 
             # Tempo inicial do loop
             t0 = time.time()

@@ -190,7 +190,8 @@ class TeamRobot(Robot):
         self.timeLastResponse = None
         self.lastControlLinVel = 0
         self.direction = 1
-        
+        self.movState = 0
+
         self.spinTime = 0
         self.spinTimeOut = 0.05
         self.forcedAliveTime = 0
@@ -241,7 +242,7 @@ class TeamRobot(Robot):
 
     @property
     def pose(self):
-        return (self.x, self.y, self.th)
+        return np.array([self.x, self.y, self.th])
 
     @property
     def w_raw(self):

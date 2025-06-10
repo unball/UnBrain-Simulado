@@ -62,6 +62,7 @@ class World:
             self.enemies[i] = TeamRobot(self, i, on=immediate_start)
         self.ball = Ball(self)
         self.field = Field(side)
+        self.marginPos = self.field.marginPos
         self.referee = referee
         self.firasim = firasim
         self.debug = debug

@@ -80,7 +80,7 @@ class MainStrategy(Strategy):
         return pose[:2]
 
     def formationDecider(self):
-        if self.world.ball.pos[0] < -0.3:
+        if self.world.ball.pos[0] < -0.71:
             return [GoalKeeper, Defender, Defender, Defender, Attacker]
         else:
             return [GoalKeeper,Attacker, Defender, Defender, Attacker]
@@ -155,7 +155,7 @@ class MainStrategy(Strategy):
 
             if Defender in formation and len(toDecide) >= 1:
                 formation, toDecide = self.decideBestDefender(formation, toDecide)
-                
+
             hasMaster = False
             if Attacker in formation and len(toDecide) >= 1:
                 formation, toDecide = self.DecideBestAttacker(formation, toDecide, hasMaster)

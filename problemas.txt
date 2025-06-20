@@ -1,1 +1,0 @@
-problemas com falta na area do gol (avoid ellipse area)

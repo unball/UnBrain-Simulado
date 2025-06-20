@@ -18,7 +18,7 @@ class SecAttackerControl(Control):
     self.mu = mu
     self.amax = self.mu * self.g
     self.vmax = vmax
-    self.L = get_Lr("self.world.mode")[0]
+    self.L = get_Lr()[0]
     self.kv = 10
     self.vbias = vbias
 
@@ -137,10 +137,10 @@ class SecAttackerControl(Control):
     v5 = self.vbias + (self.vmax-self.vbias) * self.controlLine(np.log(sd), np.log(self.sd_max), np.log(self.sd_min))
     v  = min(v5, v3) + sat(injection, 1)
 
-    if v == v3:
-      print('velocidade = v3')
-    elif v == v5:
-      print('velocidade = v5')
+    #if v == v3:
+    #  print('velocidade = v3')
+    #elif v == v5:
+    #  print('velocidade = v5')
 
     #print(vtarget)
     #v  = max(min(self.vbias + (self.vmax-self.vbias) * np.exp(-self.kapd * sd), v3), self.loadedInjection * vtarget)#max(min(v1, v2, v3, v4), 0)

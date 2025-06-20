@@ -32,6 +32,6 @@ class Control(ABC):
 
         v, w = self.output(robot)
         robot.lastControlLinVel = v
-        vr, vl = speeds2motors(v, self.world.field.side * w,"pdoaspdoas")
+        vr, vl = speeds2motors(v, self.world.field.side * w)
         
         return vl, vr

@@ -16,7 +16,7 @@ class GoalKeeperControl(Control):
     self.mu = mu
     self.amax = self.mu * self.g
     self.vmax = vmax
-    self.L = get_Lr("self.world.mode")[0]
+    self.L = get_Lr()[0]
     self.ieth = 0
     self.iep = 0
 

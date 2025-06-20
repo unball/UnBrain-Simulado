@@ -16,7 +16,7 @@ class MidfielderControl(Control):
     self.mu = mu
     self.amax = self.mu * self.g
     self.vmax = vmax
-    self.L = get_Lr("self.world.mode")[0]
+    self.L = get_Lr()[0]
     self.kv = 10
     self.vbias = 0.2
     self.kapd = 3

@@ -8,7 +8,7 @@ wheel_reduction = 1
 wheel_w_max = 110
 conversion = 127 / wheel_w_max
 
-def get_Lr(mode: str) -> (float, float):
+def get_Lr() -> (float, float):
   # Supostamente devia ser
   #L = 0.075
   #r = 0.0325
@@ -22,10 +22,10 @@ def deadzone(vin, up, down):
     return vin+up if (vin > 0) else vin-abs(down)
   return 0
 
-def speeds2motors(v: float, w: float, mode: str) -> (int, int):
+def speeds2motors(v: float, w: float) -> (int, int):
   """Recebe velocidade linear e angular e retorna velocidades para as duas rodas"""
 
-  L, r = get_Lr(mode)
+  L, r = get_Lr()
 
   # Computa a velocidade angular de rotação de cada roda
   vr = (v + (L/2)*w) / r#/ (2*np.pi*r) * wheel_reduction
@@ -42,7 +42,7 @@ def speeds2motors(v: float, w: float, mode: str) -> (int, int):
 
 def motors2linvel(vl: float, vr: float, mode: str) -> float:
 
-  L, r = get_Lr(mode)
+  L, r = get_Lr()
 
   # Computa a velocidade angular de rotação de cada roda
   return (vr + vl) * (2*np.pi*r) / wheel_reduction / 2

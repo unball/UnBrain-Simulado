@@ -22,7 +22,7 @@ import constants
 class Loop:
 
     def __init__(self,
-                loop_freq=90,
+                loop_freq=120,
                 draw_uvf=False,
                 team_yellow=False,
                 immediate_start=False,
@@ -59,6 +59,7 @@ class Loop:
         self.strategy = MainStrategy(self.world, static_entities=static_entities)
 
         # Variáveis
+        self.message = None
         self.t0 = time.time()
         self.loopTime = 1.0 / loop_freq
         self.running = True
@@ -111,14 +112,13 @@ class Loop:
             
     def busyLoop(self):
 
-        if(self.world.firasim):
+        if self.world.firasim:
             message = self.firasim.vision.read()
-            #if message is not None: print("mensagem FIRASim", message)
-            self.execute = True if message else False
-            
-            if self.execute:
-                #print(message)
-                self.world.FIRASim_update(message)
+            self.message = message if message else self.message
+            #if self.message is not None: print("mensagem FIRASim", self.message)
+            self.execute = True if self.message else False
+            if self.execute: 
+                self.world.FIRASim_update(self.message)
         
         elif((self.world.debug) and not (self.world.firasim)):
             print("_________________________")
@@ -159,6 +159,7 @@ class Loop:
             self.busyLoop()
             while time.time() - t0 < self.loopTime:
                 self.loop()
+                self.busyLoop()
                 
             # Tempo inicial do loop
             t0 = time.time()

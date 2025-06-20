@@ -1,0 +1,1 @@
+docker run --name unbrain-teste --rm -it -v ./:/UnBrain/ --network=host unball/unbrain:latest

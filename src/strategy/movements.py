@@ -51,13 +51,7 @@ def goToBall(rb, rg, vb, rl):
     # Ângulo da bola até o gol
     angle = ang(rb, rg)
 
-    eps = 1e-5  # pequeno delta para derivada numérica
-
-    fx = lambda x: ang((x, rb[1]), rg)
-    fy = lambda y: ang((rb[0], y), rg)
-
-    dth = derivative([fx(rb[0] + eps), fx(rb[0])], eps) * vb[0] + \
-      derivative([fy(rb[1] + eps), fy(rb[1])], eps) * vb[1]
+    dth = derivative(lambda x : ang((x, rb[1]), rg), rb[0]) * vb[0] + derivative(lambda y : ang((rb[0], y), rg), rb[1]) * vb[1]
     v = (*vb, dth)
     return np.array([*rb[:2], angle]), v
 

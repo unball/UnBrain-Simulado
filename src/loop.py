@@ -22,7 +22,7 @@ import constants
 class Loop:
 
     def __init__(self,
-                loop_freq=90,
+                loop_freq=120,
                 draw_uvf=False,
                 team_yellow=False,
                 immediate_start=False,
@@ -33,7 +33,8 @@ class Loop:
                 control=False,
                 debug =False,
                 mirror=False, 
-                n_robots=[0,1,2,3,4]
+                n_robots=[0,1,2,3,4],
+                control_tester=False
             ):
         # Instancia interface com o simulador
         self.firasim = VSS(len(n_robots),team_yellow=team_yellow)
@@ -51,13 +52,14 @@ class Loop:
 
         team_side = -1 if mirror else 1
         
-        self.world = World(n_robots=n_robots, side=team_side, team_yellow=team_yellow, immediate_start=immediate_start,referee=referee, firasim=firasim, control=control, debug=debug, mirror=mirror)
+        self.world = World(control_tester= control_tester, n_robots=n_robots, side=team_side, team_yellow=team_yellow, immediate_start=immediate_start,referee=referee, firasim=firasim, control=control, debug=debug, mirror=mirror)
         
         # self.arp = AutomaticReplacer(self.world) descontinuado.
 
         self.strategy = MainStrategy(self.world, static_entities=static_entities)
 
         # Variáveis
+        self.message = None
         self.t0 = time.time()
         self.loopTime = 1.0 / loop_freq
         self.running = True
@@ -110,14 +112,13 @@ class Loop:
             
     def busyLoop(self):
 
-        if(self.world.firasim):
+        if self.world.firasim:
             message = self.firasim.vision.read()
-            #if message is not None: print("mensagem FIRASim", message)
-            self.execute = True if message else False
-            
-            if self.execute:
-                #print(message)
-                self.world.FIRASim_update(message)
+            self.message = message if message else self.message
+            #if self.message is not None: print("mensagem FIRASim", self.message)
+            self.execute = True if self.message else False
+            if self.execute: 
+                self.world.FIRASim_update(self.message)
         
         elif((self.world.debug) and not (self.world.firasim)):
             print("_________________________")
@@ -157,6 +158,7 @@ class Loop:
             # Executa o loop de visão e referee até dar o tempo de executar o resto
             self.busyLoop()
             while time.time() - t0 < self.loopTime:
+                self.loop()
                 self.busyLoop()
                 
             # Tempo inicial do loop

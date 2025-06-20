@@ -7,8 +7,8 @@ class Field:
         self.goalAreaWidth = 0.5
         self.goalAreaHeight = 0.05
 
-        self.xmargin = 0.30
-        self.ymargin = 0.18
+        self.xmargin =  0.01
+        self.ymargin = 0.005
         self.side = side
 
         self.goalDepth = 0.15
@@ -50,17 +50,19 @@ class Field:
         return (self.goalAreaWidth, self.goalAreaHeight)
 
 class World:
-    def __init__(self, n_robots=[0,1,2,3,4], side=1, team_yellow=False, immediate_start=False, referee=False, firasim=False, debug=False, mirror=False, control=False, last_command=None, i = False):
+    def __init__(self, control_tester=False, n_robots=[0,1,2,3,4], side=1, team_yellow=False, immediate_start=False, referee=False, firasim=False, debug=False, mirror=False, control=False, last_command=None, i = False):
         self.n_robots = n_robots
         self._team = [None,None,None,None,None]
         self.enemies = [None,None,None,None,None]
         self.staticen = False
+        self.control_tester=control_tester
         for i in self.n_robots:
             self._team[i] = TeamRobot(self, i, on=immediate_start)
         for i in self.n_robots:
             self.enemies[i] = TeamRobot(self, i, on=immediate_start)
         self.ball = Ball(self)
         self.field = Field(side)
+        self.marginPos = self.field.marginPos
         self.referee = referee
         self.firasim = firasim
         self.debug = debug

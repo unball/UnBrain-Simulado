@@ -3,16 +3,19 @@ import numpy as np
 # Constantes físicas do robô
 wheel_reduction = 1
 
-# Supostamente devia ser
-#r = 0.0325
-#L = 0.075
 
-# O que realmente é
-r = 0.016
-L = 0.075
 wheel_reduction = 1
 wheel_w_max = 110
 conversion = 127 / wheel_w_max
+
+def get_Lr() -> (float, float):
+  # Supostamente devia ser
+  #L = 0.075
+  #r = 0.0325
+  L = 0.08
+  r = 0.02
+  return L, r
+
 
 def deadzone(vin, up, down):
   if (vin!=0):
@@ -21,6 +24,8 @@ def deadzone(vin, up, down):
 
 def speeds2motors(v: float, w: float) -> (int, int):
   """Recebe velocidade linear e angular e retorna velocidades para as duas rodas"""
+
+  L, r = get_Lr()
 
   # Computa a velocidade angular de rotação de cada roda
   vr = (v + (L/2)*w) / r#/ (2*np.pi*r) * wheel_reduction
@@ -35,7 +40,10 @@ def speeds2motors(v: float, w: float) -> (int, int):
   
   return vr, vl
 
-def motors2linvel(vl: float, vr: float) -> float:
+def motors2linvel(vl: float, vr: float, mode: str) -> float:
+
+  L, r = get_Lr()
+
   # Computa a velocidade angular de rotação de cada roda
   return (vr + vl) * (2*np.pi*r) / wheel_reduction / 2
 
@@ -86,9 +94,8 @@ def fixAngle(angle: float):
   else:
     return angle
 
-def derivative(vs, dt, order=1):
-    if order == 1: return (vs[0] - vs[1]) / dt
-    elif order == 2: return (vs[0] - 2*vs[1] + vs[2]) / dt**2
+def derivative(F, x, d=0.00001, *args):
+  return (F(x+d, *args) - F(x, *args)) / d
 
 def angularDerivative(vs, dt, order=1):
     if order == 1: return adjustAngle(vs[0] - vs[1]) / dt
@@ -99,6 +106,9 @@ def howFrontBall(rb, rr, rg):
 
 def howPerpBall(rb, rr, rg):
     return np.dot(rr[:2]-rb, unit(angl(rg-rb)+np.pi/2))
+
+def insideRect(r, rm, s):
+  return np.all(r-rm < s)
 
 def projectLine(r, v, xline):
   return ((xline-r[0])/v[0])*v[1] + r[1] if v[0] != 0 else 0
@@ -126,19 +136,32 @@ def distToBall(pa, pb, pc):
 
 def perpl(r):
   return np.array([r[1], -r[0]])
-  
+
 def bestWithHyst(state: int, possibleStates: list, possibleStatesDistances: list, hyst: float):
   if state in possibleStates:
-    distances=np.array(possibleStatesDistances)
-    for index, s in enumerate(possibleStates):
-      if s != state:
-        distances[index]+=hyst
+    distances = np.array(possibleStatesDistances) + [hyst for s in possibleStates if s != state]
+    
   else:
     distances = np.array(possibleStatesDistances)
-  return possibleStates[np.argmin(distances)]
+  #Se o len > 2 (mais de 2 robôs) descobrimos qual melhor robô, se não, 0
+  if len(distances) >= 2: best = np.argmin(distances)
+  else: best = 0
+  return possibleStates[best]
+
 def encodeSpeeds(v: float, w: float) -> (int, int):
   
   venc = int(v/2 * 32767)
   wenc = int(w/64 * 32767)
 
-  return (1 if venc >= 0 else -1) * (abs(venc) % 32767), (1 if wenc >= 0 else -1) * (abs(wenc) % 32767)
+  return int((1 if venc >= 0 else -1) * (abs(venc) % 32767)), int((1 if wenc >= 0 else -1) * (abs(wenc) % 32767))
+                                                                  
+def RangeKutta(pos, vel, th, T, delta_t, w=0):
+
+  #Calcula o ângulo futuro que o robô vai estar baseado no seu ângulo atual e sua velocidade angular.
+  new_th = th * T + delta_t * w * T
+
+  #Calcula a posição futura usando a média entre o ângulo atual e o futuro, a posição atual e a velocidade na coordenada
+  new_x = pos[0] + delta_t * np.cos( (th * T + new_th)/2 ) * vel[0]
+  new_y = pos[1] + delta_t * np.cos( (th * T + new_th)/2 ) * vel[1]
+
+  return((new_x, new_y, new_th))

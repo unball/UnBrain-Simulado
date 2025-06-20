@@ -3,7 +3,8 @@ from .entity.attacker import Attacker
 from .entity.goalKeeper import GoalKeeper
 from .entity.defender import Defender
 from .entity.midfielder import Midfielder
-from .entity.controlTest import ControlTester
+from .entity.SecAttacker import SecAttacker
+from .entity.controlTester import ControlTester
 from client.protobuf.vssref_common_pb2 import Foul, Quadrant
 from client.referee import RefereeCommands
 from tools import sats, norml, unit, angl, angError, projectLine, howFrontBall, norm, bestWithHyst
@@ -37,6 +38,9 @@ class MainStrategy(Strategy):
         # Variables
         self.static_entities = static_entities
 
+    def getEntity(self, entity):
+        return entity.__class__.__name__
+    
     def manageReferee(self, command):
         if command is None: 
             for robot in self.world.raw_team: 
@@ -76,7 +80,7 @@ class MainStrategy(Strategy):
         return pose[:2]
 
     def formationDecider(self):
-        if self.world.ball.pos[0] < 0.35 and self.world.team_yellow is True:
+        if self.world.ball.pos[0] < -0.71:
             return [GoalKeeper, Defender, Defender, Defender, Attacker]
         else:
             return [GoalKeeper,Attacker, Defender, Defender, Attacker]
@@ -85,11 +89,23 @@ class MainStrategy(Strategy):
         return self.world.n_robots.copy()
 
     def DecideBestAttacker(self, formation, toDecide, hasMaster):
-        distances = [norm(self.world.ball.pos, self.world.team[robotIndex].pos) for robotIndex in toDecide]
-        self.currentAttacker = bestWithHyst(self.currentAttacker, toDecide, distances, 0.2)
-        self.world.team[self.currentAttacker].updateEntity(Attacker, ballShift=0, slave=hasMaster)
-        toDecide.remove(self.currentAttacker)
+        d = []
+        for i in toDecide:
+            if i != self.currentAttacker:
+                d += [norm(self.world.team[i].pos, self.world.ball.pos)]
+
+        self.currentAttacker = bestWithHyst(self.currentAttacker, toDecide, d, 0.20)
+        if self.world.team[self.currentAttacker].entity != None and self.getEntity(self.currentAttacker) == 'Attacker':
+            if self.world.team[self.currentAttacker].entity.slave == False:
+                self.world.team[self.currentAttacker].updateEntity(Attacker, ballShift=0, slave=False)
+            elif self.world.team[self.currentAttacker].entity.slave == True:
+                self.world.team[self.currentAttacker].updateEntity(Attacker, ballShift=0, slave=True)
+        else:
+            self.world.team[self.currentAttacker].updateEntity(Attacker, ballShift=0, slave=False)
+        if self.currentAttacker in toDecide:
+            toDecide.remove(self.currentAttacker)
         formation.remove(Attacker)
+
         return formation, toDecide
 
     def decideBestGoalKeeper(self, formation, toDecide):
@@ -103,12 +119,16 @@ class MainStrategy(Strategy):
 
     def decideBestDefender(self, formation, toDecide):
         target = self.ellipseTarget()
-        distances = [norm(target, self.world.team[robotIndex].pos) for robotIndex in toDecide]
+        d = []
+        for i in toDecide:
+            if i != self.currentDefender:
+                d += [norm(self.world.team[i].pos, target)]
 
-        self.currentDefender = bestWithHyst(self.currentDefender, toDecide, distances, 0.20)
+        self.currentDefender = bestWithHyst(self.currentDefender, toDecide, d, 0.20)
         self.world.team[self.currentDefender].updateEntity(Defender)
 
-        toDecide.remove(self.currentDefender)
+        if self.currentDefender in toDecide:
+            toDecide.remove(self.currentDefender)
         formation.remove(Defender)
 
         return formation, toDecide
@@ -118,31 +138,23 @@ class MainStrategy(Strategy):
         #De repetição que tem range máximo o número de robôs e atualizaremos com base na prioridade (goleiro primeiro, atacante segundo) 
         #obs: (ficará comentado o que era antes)
         if self.static_entities:
-            roles=[Attacker, GoalKeeper, Midfielder, Midfielder, Attacker]
+            roles=[Attacker, SecAttacker, Defender, Defender, GoalKeeper]
             if self.world.staticen is False:
                 for robo in self.world.n_robots:
                     self.world.team[int(robo)].updateEntity(roles[int(robo)])
                     self.world.staticen = True
-            #self.world.team[0].updateEntity(Attacker)
-            #self.world.team[1].updateEntity(Defender)
-            #self.world.team[2].updateEntity(GoalKeeper)
-
-        #mesma coisa aqui só que sem o static-entities
-        # elif world.control:
-        #     for i in self.world.n_robots:
-        #         self.world.team[i].updateEntity(ControlTester, forced_update=True)
-        #     #self.world.team[0].updateEntity(ControlTester, forced_update=True)
-        #     #self.world.team[1].updateEntity(ControlTester, forced_update=True)
-        #     #self.world.team[2].updateEntity(ControlTester, forced_update=True)
-
+        elif self.world.control_tester:
+            for i in self.world.n_robots:
+                self.world.team[i].updateEntity(ControlTester)
         else:
-            
             formation = self.formationDecider()
             toDecide = self.availableRobotIndexes()
 
-
             if GoalKeeper in formation and len(toDecide) >= 1:
                 formation, toDecide = self.decideBestGoalKeeper(formation, toDecide)
+
+            if Defender in formation and len(toDecide) >= 1:
+                formation, toDecide = self.decideBestDefender(formation, toDecide)
 
             hasMaster = False
             if Attacker in formation and len(toDecide) >= 1:
@@ -151,9 +163,6 @@ class MainStrategy(Strategy):
 
             if Attacker in formation and len(toDecide) >= 1:
                 formation, toDecide = self.DecideBestAttacker(formation,toDecide, hasMaster)
-
-            if Defender in formation and len(toDecide) >= 1:
-                formation, toDecide = self.decideBestDefender(formation, toDecide)
 
             if Defender in formation and len(toDecide) >= 1:
                 formation, toDecide = self.decideBestDefender(formation, toDecide)

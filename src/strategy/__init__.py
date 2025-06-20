@@ -138,7 +138,7 @@ class MainStrategy(Strategy):
         #De repetição que tem range máximo o número de robôs e atualizaremos com base na prioridade (goleiro primeiro, atacante segundo) 
         #obs: (ficará comentado o que era antes)
         if self.static_entities:
-            roles=[Attacker, SecAttacker, Defender, Defender, GoalKeeper]
+            roles=[Attacker, SecAttacker, Attacker, Attacker, GoalKeeper]
             if self.world.staticen is False:
                 for robo in self.world.n_robots:
                     self.world.team[int(robo)].updateEntity(roles[int(robo)])

@@ -8,7 +8,7 @@ class Field:
         self.goalAreaHeight = 0.05
 
         self.xmargin =  0.01
-        self.ymargin = 0.005
+        self.ymargin = 0.0025
         self.side = side
 
         self.goalDepth = 0.15

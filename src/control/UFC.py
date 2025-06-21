@@ -7,7 +7,7 @@ import time
 
 class UFC_Simple(Control):
     """Controle unificado para o Univector Field, utiliza o ângulo definido pelo campo como referência \\(\\theta_d\\)."""
-    def __init__(self, world, kw=7, kp=150, mu=0.35, vmax=1.5, enableInjection=False):
+    def __init__(self, world, kw=7, kp=150, mu=0.5, vmax=1.5, enableInjection=False):
       Control.__init__(self, world)
 
       self.g = 9.8

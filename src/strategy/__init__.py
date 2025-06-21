@@ -80,8 +80,9 @@ class MainStrategy(Strategy):
         return pose[:2]
 
     def formationDecider(self):
+
         if self.world.ball.pos[0] < -0.71:
-            return [GoalKeeper, Defender, Defender, Defender, Attacker]
+            return [GoalKeeper, Attacker, Defender, Defender, Attacker]
         else:
             return [GoalKeeper,Attacker, Defender, Defender, Attacker]
     #alteramos para que ToDecide (a variável que instancia esta função) esteja em formato de lista e não em um np.ndarray
@@ -138,7 +139,7 @@ class MainStrategy(Strategy):
         #De repetição que tem range máximo o número de robôs e atualizaremos com base na prioridade (goleiro primeiro, atacante segundo) 
         #obs: (ficará comentado o que era antes)
         if self.static_entities:
-            roles=[Attacker, SecAttacker, Attacker, Attacker, GoalKeeper]
+            roles=[Attacker, SecAttacker, Defender, Defender, GoalKeeper]
             if self.world.staticen is False:
                 for robo in self.world.n_robots:
                     self.world.team[int(robo)].updateEntity(roles[int(robo)])
@@ -152,14 +153,14 @@ class MainStrategy(Strategy):
 
             if GoalKeeper in formation and len(toDecide) >= 1:
                 formation, toDecide = self.decideBestGoalKeeper(formation, toDecide)
-
-            if Defender in formation and len(toDecide) >= 1:
-                formation, toDecide = self.decideBestDefender(formation, toDecide)
-
+            
             hasMaster = False
             if Attacker in formation and len(toDecide) >= 1:
                 formation, toDecide = self.DecideBestAttacker(formation, toDecide, hasMaster)
                 hasMaster = True
+
+            if Defender in formation and len(toDecide) >= 1:
+                formation, toDecide = self.decideBestDefender(formation, toDecide)          
 
             if Attacker in formation and len(toDecide) >= 1:
                 formation, toDecide = self.DecideBestAttacker(formation,toDecide, hasMaster)
@@ -169,11 +170,6 @@ class MainStrategy(Strategy):
             
             if Defender in formation and len(toDecide) >= 1:
                 formation, toDecide = self.decideBestDefender(formation, toDecide)
-
-            if Midfielder in formation and len(toDecide) >= 1:
-                self.world.team[toDecide[0]].updateEntity(Midfielder)
-                toDecide.remove(toDecide[0])
-                formation.remove(Midfielder)
         for robot in self.world.team:
             if robot is not None:
                 robot.updateSpin()

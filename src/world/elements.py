@@ -274,8 +274,8 @@ class TeamRobot(Robot):
     
     def isAlive(self):
         """Verifica se o robô está vivo baseado na relação entre a velocidade enviada pelo controle e a velocidade medida pela visão"""
-        # if time.time() - self.forcedAliveTime < self.forcedAliveTimeTimeOut:
-        #     return True
+        if time.time() - self.forcedAliveTime < self.forcedAliveTimeTimeOut:
+            return True
 
         if not self.on:
             self.timeLastResponse = time.time()
